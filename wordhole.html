@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>w o r d h o l e</title>
+<style>
+  body {
+    margin: 0;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  canvas {
+    display: block;
+    width: 600px;
+    height: 600px;
+    border: 0px dotted #000;
+    background: #ffffff;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="c" width="600" height="600"></canvas>
+
+<script>
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+const canvasSize = 600;
+const center = canvasSize / 2;
+
+// text
+const phrase = ["    ", "text","emerges","in","time","and","concludes","in","space"];
+const words = [...phrase];
+
+let noiseWords = [];
+let started = false;
+let elapsed = 0;
+
+// root–like growth control
+let maxWords = 840;
+let growthRadius = 60;
+let growthStep = 2;
+
+// --- draw stable centered phrase
+function drawCentralPhrase() {
+  ctx.font = "14px monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "black";
+
+  const spacing = 48;
+  const startX = center - (spacing * (phrase.length - 1)) / 2;
+
+  phrase.forEach((w, i) => {
+    ctx.fillText(w, startX + i * spacing, center);
+  });
+}
+
+// --- spawn words in expanding root-like halo
+function spawnWord() {
+  if (noiseWords.length >= maxWords) return;
+
+  const angle = Math.random() * Math.PI * 2;
+  const r = growthRadius + Math.random() * 8;
+
+  noiseWords.push({
+    text: words[Math.floor(Math.random() * words.length)],
+    x: center + Math.cos(angle) * r,
+    y: center + Math.sin(angle) * r,
+    size: 10 + Math.random() * 2
+  });
+
+  // gradual outward growth (roots)
+  growthRadius += growthStep * 0.05;
+}
+
+// --- draw loop
+function draw() {
+  ctx.fillStyle = "rgba(255,255,255,0.15)";
+  ctx.fillRect(0,0,canvasSize,canvasSize);
+
+  elapsed += 1/40;
+
+  // phase 1: readable sentence
+  if (elapsed < 2) {
+    drawCentralPhrase();
+  } 
+  // phase 2: growth
+  else {
+    started = true;
+    drawCentralPhrase(); // always remains readable
+
+    if (Math.random() < 0.6) spawnWord();
+  }
+
+  // draw roots
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "black";
+
+  noiseWords.forEach(w => {
+    ctx.font = `${w.size}px monospace`;
+    ctx.fillText(w.text, w.x, w.y);
+  });
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
+</body>
+</html>
